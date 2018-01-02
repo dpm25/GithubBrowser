@@ -1,6 +1,7 @@
 'use strict';
 
 const buffer = require('buffer');
+import AuthService from './AuthService.js';
 import React, { Component } from 'react';
 import {
   Platform,
@@ -23,40 +24,17 @@ export default class Login extends Component<{}> {
 	onPress = () => {
 		this.setState({showProgress: true});
     	console.log('Attempting to log in with user name ' + this.state.username);
-    	// encode username and password for Basic Auth
-    	let b = new buffer.Buffer(this.state.username + ':' + this.state.password);
-    	const encodedAuth = b.toString('base64');
+    	let service = new AuthService();
+    	service.login({
+    		username: this.state.username,
+    		password: this.state.password
+    	}, (results) => {
+    		this.setState(results);
 
-    	fetch('https://api.github.com/user', {
-    		headers: {
-    			'Authorization': 'Basic ' + encodedAuth
+    		if (results.goodLogin) {
+    			this.props.onLogin();
     		}
     	})
-    	.then((response) => {
-    		if ((response.status >= 200 && response.status < 300)) {
-    			this.setState({goodLogin: true});
-    			return response;
-    		}
-
-    		throw {
-    			badCredentials: response.status === 401,
-    			unknownError: response.status !== 401
-    		}
-    	})
-    	.then((response) => {
-    		return response.json();
-    	})
-    	.then((results) => {
-    		console.log(results);
-    		this.setState({showProgress: false});
-    	})
-    	.catch((err) => {
-    		console.log('Error: ' + err);
-    		this.setState(err);
-    	})
-    	.finally(() => {
-    		this.setState({showProgress: false});
-    	});
   	}
 
 	render() {

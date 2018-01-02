@@ -13,12 +13,38 @@ import {
 } from 'react-native';
 
 import Login from './Login.js';
+import AuthService from './AuthService.js';
+import AppContainer from './AppContainer.js';
 
 export default class App extends Component<{}> {
+  constructor(props) {
+    super(props);
+    this.state = {};
+
+    let authService =  new AuthService();
+    authService.getAuthInfo((err, authInfo) => {
+      this.setState({
+        checkingAuth: true
+      })
+    });
+  }
+
+  onLogin = () => {
+    console.log('We are now logged in');
+    this.setState({isLoggedIn: true});
+  }
+
   render() {
-    return (
-      <Login />
-    );
+    if (this.state.checkingAuth) {
+      return (
+        <AppContainer />
+      )
+    }
+    else {
+      return (
+        <Login onLogin={this.onLogin} />
+      );
+    }
   }
 }
 
